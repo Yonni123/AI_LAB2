@@ -188,6 +188,8 @@ path, cost, solved_map = sa.search(_map_, start_value=-2, goal=-3, algorithm="DF
 plotMap(solved_map, path, title_ ='DFS with cost = ' + str(cost))
 path, cost, solved_map = sa.search(_map_, start_value=-2, goal=-3, algorithm="BFS")
 plotMap(solved_map, path, title_ ='BFS with cost = ' + str(cost))
+path, cost, solved_map = sa.search(_map_, start_value=-2, goal=-3, algorithm="Random")
+plotMap(solved_map, path, title_ ='Random with cost = ' + str(cost))
 
 quit()
 

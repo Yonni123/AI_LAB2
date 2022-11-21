@@ -15,10 +15,9 @@ class PriorityQueue:
 
 
 class cell:
-    def __init__(self, x, y, parent):
+    def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.parent = parent
         self.g = 0
 
     def __eq__(self, other):
@@ -38,22 +37,22 @@ def get_neighbors(map, current_cell, goal=-3):
     # get the cell above the current cell (if it exists and is not an obstacle or already visited)
     if current_cell.y - 1 >= 0:
         if map[current_cell.y - 1][current_cell.x] == 0 or map[current_cell.y - 1][current_cell.x] == goal:
-            neighbors.append(cell(current_cell.x, current_cell.y - 1, current_cell))
+            neighbors.append(cell(current_cell.x, current_cell.y - 1))
 
     # get the cell below the current cell (if it exists and is not an obstacle or already visited)
     if current_cell.y + 1 < map.shape[0]:
         if map[current_cell.y + 1][current_cell.x] == 0 or map[current_cell.y + 1][current_cell.x] == goal:
-            neighbors.append(cell(current_cell.x, current_cell.y + 1, current_cell))
+            neighbors.append(cell(current_cell.x, current_cell.y + 1))
 
     # get the cell to the left of the current cell (if it exists and is not an obstacle or already visited)
     if current_cell.x - 1 >= 0:
         if map[current_cell.y][current_cell.x - 1] == 0 or map[current_cell.y][current_cell.x - 1] == goal:
-            neighbors.append(cell(current_cell.x - 1, current_cell.y, current_cell))
+            neighbors.append(cell(current_cell.x - 1, current_cell.y))
 
     # get the cell to the right of the current cell (if it exists and is not an obstacle or already visited)
     if current_cell.x + 1 < map.shape[1]:
         if map[current_cell.y][current_cell.x + 1] == 0 or map[current_cell.y][current_cell.x + 1] == goal:
-            neighbors.append(cell(current_cell.x + 1, current_cell.y, current_cell))
+            neighbors.append(cell(current_cell.x + 1, current_cell.y))
 
     return neighbors
 
@@ -64,7 +63,7 @@ def cost_function(algorithm, current_cell, next):
     elif algorithm == "DFS":
         return current_cell.g - 1
     elif algorithm == "Random":
-        return np.random.randint(100)
+        return np.random.randint(1, 100)
 
     return current_cell.g + 1
 
@@ -73,7 +72,7 @@ def start_cost(algorithm):
     if algorithm == "BFS":
         return 0
     elif algorithm == "DFS":
-        return 100000
+        return np.iinfo(np.int32).max
     elif algorithm == "Random":
         return np.random.randint(100)
     pass
@@ -84,10 +83,7 @@ def search(map_, start_value, goal, algorithm='BFS'):
     map = np.copy(map_)
 
     coord = np.where(map == start_value)
-    start = cell(coord[1][0], coord[0][0], None)    # start cell
-
-    # cost moving to another cell
-    moving_cost = 1
+    start = cell(coord[1][0], coord[0][0])    # start cell
 
     # New priority queue
     frontier = PriorityQueue()
@@ -97,11 +93,7 @@ def search(map_, start_value, goal, algorithm='BFS'):
     # path taken
     came_from = {}
 
-    # expanded list with cost value for each cell
-    cost = {}
-
     # init. starting node
-    start.parent = None
     start.g = priority
 
     # if there is still nodes to open
@@ -116,7 +108,6 @@ def search(map_, start_value, goal, algorithm='BFS'):
         # for each neighbour of the current cell
         # Implement get_neighbors function (return nodes to expand next)
         # (make sure you avoid repetitions!)
-        a = get_neighbors(map, current_cell)
         for next in get_neighbors(map, current_cell, goal):
 
             # compute cost to reach next cell
@@ -136,7 +127,7 @@ def search(map_, start_value, goal, algorithm='BFS'):
 
     # Figure out the path
     coord = np.where(map == goal)
-    goal = cell(coord[1][0], coord[0][0], None)    # start cell
+    goal = cell(coord[1][0], coord[0][0])    # start cell
     path = []
     current = [goal.x, goal.y]
     while current != [start.x, start.y]:
@@ -148,9 +139,11 @@ def search(map_, start_value, goal, algorithm='BFS'):
     path = np.array(path)
 
     # Fix the map values, so they range from 1 to max
-    if algorithm == "DFS":
+    if algorithm == "DFS" or algorithm == "Random":
         # find min value that's above 0
         min_val = np.min(map[map > 0])
         map[map > 0] -= min_val - 1
+
+    cost = path.shape[0]
 
     return path, cost, map
