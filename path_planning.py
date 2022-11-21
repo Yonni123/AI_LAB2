@@ -4,6 +4,7 @@
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+import search_algorithm as sa
 
 percentOfObstacle = 0.9  # 30% - 60%, random
 
@@ -33,7 +34,7 @@ def generateMap2d(size_):
     map2d[map2d <= perObstacles_] = 0
     map2d[map2d > perObstacles_] = -1
 
-    yloc, xloc = [np.random.random_integers(0, size_x-1, 2), np.random.random_integers(0, size_y-1, 2)]
+    yloc, xloc = [np.random.randint(0, size_x-1, 2), np.random.randint(0, size_y-1, 2)]
     while (yloc[0] == yloc[1]) and (xloc[0] == xloc[1]):
         yloc, xloc = [np.random.random_integers(0, size_x-1,2), np.random.random_integers(0, size_y-1, 2)]
 
@@ -104,9 +105,9 @@ def generateMap2d_obstacle(size_):
 
 # helper function for plotting the result
 def plotMap(map2d_, path_, title_ =''):
-    
-    '''Plots a map (image) of a 2d matrix with a path from start point to the goal point. 
-        cells with a value of 0: Free cell; 
+
+    '''Plots a map (image) of a 2d matrix with a path from start point to the goal point.
+        cells with a value of 0: Free cell;
                              -1: Obstacle;
                              -2: Start point;
                              -3: Goal point;
@@ -114,10 +115,10 @@ def plotMap(map2d_, path_, title_ =''):
     -----------
     map2d_ : array-like
         an array with Real Numbers
-        
+
     path_ : array-like
         an array of 2d corrdinates (of the path) in the format of [[x0, y0], [x1, y1], [x2, y2], ..., [x_end, y_end]]
-        
+
     title_ : string
         information/description of the plot
 
@@ -125,19 +126,19 @@ def plotMap(map2d_, path_, title_ =''):
     --------
 
     '''
-    
+
     import matplotlib.cm as cm
     plt.interactive(False)
-    
+
     colors_nn = int(map2d_.max())
     colors = cm.winter(np.linspace(0, 1, colors_nn))
 
     colorsMap2d = [[[] for x in range(map2d_.shape[1])] for y in range(map2d_.shape[0])]
     # Assign RGB Val for starting point and ending point
     locStart, locEnd = np.where(map2d_ == -2), np.where(map2d_ == -3)
-    
+
     colorsMap2d[locStart[0][0]][locStart[1][0]] = [.0, .0, .0, 1.0]  # black
-    colorsMap2d[locEnd[0][0]][locEnd[1][0]] = [.0, .0, .0, .0]  # white
+    colorsMap2d[locEnd[0][0]][locEnd[1][0]] = [0.0, 0.0, 0.5, 1.0]  # dark blue
 
     # Assign RGB Val for obstacle
     locObstacle = np.where(map2d_ == -1)
@@ -160,9 +161,9 @@ def plotMap(map2d_, path_, title_ =''):
         for icol in range(len(colorsMap2d[irow])):
             if colorsMap2d[irow][icol] == []:
                 colorsMap2d[irow][icol] = [1.0, 0.0, 0.0, 1.0]
-                
+
     path = path_.T.tolist()
-    
+
     plt.figure()
     plt.title(title_)
     plt.imshow(colorsMap2d, interpolation='nearest')
@@ -181,6 +182,14 @@ _map_ = generateMap2d([60, 60])
 plt.clf()
 plt.imshow(_map_)
 plt.show()
+
+# Find the path from start point to the goal point
+path, cost, solved_map = sa.search(_map_, start_value=-2, goal=-3, algorithm="DFS")
+plotMap(solved_map, path, title_ ='DFS with cost = ' + str(cost))
+path, cost, solved_map = sa.search(_map_, start_value=-2, goal=-3, algorithm="BFS")
+plotMap(solved_map, path, title_ ='BFS with cost = ' + str(cost))
+
+quit()
 
 # map with rotated-H shape obstacle and obstacles randomly distributed
 map_h_object, info = generateMap2d_obstacle([60, 60])
@@ -210,4 +219,4 @@ print("path", example_solved_path)
 
 plotMap(example_solved_map, example_solved_path)
 
-
+# example_solved_path = np.array([[xx, xx] for xx in range(10)])
