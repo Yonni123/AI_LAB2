@@ -185,7 +185,7 @@ def search(map_, start_value, goal_value, algorithm='BFS'):
     # Stop the timer
     end_time = timer()
 
-    # Figure out the path
+    # Figure out the path (backtracking)
     coord = np.where(map == goal_value)
     goal_value = cell(coord[1][0], coord[0][0])  # start cell
     path = []
@@ -198,13 +198,19 @@ def search(map_, start_value, goal_value, algorithm='BFS'):
     # Convert path to numpy array
     path = np.array(path)
 
-    # Fix the map values, so they range from 1 to max
+    # Fix the map values, so they range from 1 to max (for visualization purposes)
     if algorithm == "DFS":
         # find min value that's above 0
         min_val = np.min(map[map > 0])
         map[map > 0] *= -1
         map[map > 0] -= min_val - 1
         map[map < -3] += np.iinfo(np.int32).max
+    elif algorithm == "Greedy_Manhattan" or algorithm == "Greedy_Euclidean":
+        max_val = np.max(map)
+        map[map > 0] += 3
+        map[map > 0] *= -1
+        map[map < -3] += max_val + 4
+
 
     cost = path.shape[0]
 
