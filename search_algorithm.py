@@ -99,7 +99,7 @@ def start_cost(algorithm, start, goal):
     if algorithm == "BFS":
         return 0
     elif algorithm == "DFS":
-        return np.iinfo(np.int32).max
+        return np.iinfo(np.int32).max-1
     elif algorithm == "Random":
         return 0
     elif algorithm == "Greedy_Manhattan":
@@ -202,9 +202,9 @@ def search(map_, start_value, goal_value, algorithm='BFS'):
     if algorithm == "DFS":
         # find min value that's above 0
         min_val = np.min(map[map > 0])
-
-        # subtract min value from all values
+        map[map > 0] *= -1
         map[map > 0] -= min_val - 1
+        map[map < -3] += np.iinfo(np.int32).max
 
     cost = path.shape[0]
 
