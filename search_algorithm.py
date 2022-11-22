@@ -1,6 +1,6 @@
 import numpy as np
-import math
 import heapq
+from timeit import default_timer as timer
 
 # Priority Queue based on heapq
 class PriorityQueue:
@@ -57,13 +57,28 @@ def get_neighbors(map, current_cell, goal=-3):
     return neighbors
 
 
-def cost_function(algorithm, current_cell, next):
+def manhattan_distance(cell1, cell2):
+    return abs(cell1.x - cell2.x) + abs(cell1.y - cell2.y)
+
+def euclidean_distance(cell1, cell2):
+    return np.sqrt((cell1.x - cell2.x) ** 2 + (cell1.y - cell2.y) ** 2)
+
+
+def cost_function(algorithm, current_cell, next, start, goal):
     if algorithm == "BFS":
         return current_cell.g + 1
     elif algorithm == "DFS":
         return current_cell.g - 1
     elif algorithm == "Random":
         return np.random.randint(1, 100)
+    elif algorithm == "Greedy_Manhattan":
+        return manhattan_distance(next, goal)
+    elif algorithm == "Greedy_Euclidean":
+        return euclidean_distance(next, goal)
+    elif algorithm == "A*_Manhattan":
+        return manhattan_distance(start, next) + manhattan_distance(next, goal)
+    elif algorithm == "A*_Euclidean":
+        return euclidean_distance(start, next) + euclidean_distance(next, goal)
 
     return current_cell.g + 1
 
@@ -75,15 +90,25 @@ def start_cost(algorithm):
         return np.iinfo(np.int32).max
     elif algorithm == "Random":
         return np.random.randint(100)
+    elif algorithm == "Greedy_Manhattan":
+        return 0
+    elif algorithm == "Greedy_Euclidean":
+        return 0
+    elif algorithm == "A*_Manhattan":
+        return 0
+    elif algorithm == "A*_Euclidean":
+        return 0
     pass
 
 
-def search(map_, start_value, goal, algorithm='BFS'):
+def search(map_, start_value, goal_value, algorithm='BFS'):
     # Make a copy of the map
     map = np.copy(map_)
 
     coord = np.where(map == start_value)
     start = cell(coord[1][0], coord[0][0])    # start cell
+    coord = np.where(map == goal_value)
+    goal = cell(coord[1][0], coord[0][0])    # goal cell
 
     # New priority queue
     frontier = PriorityQueue()
@@ -95,6 +120,10 @@ def search(map_, start_value, goal, algorithm='BFS'):
 
     # init. starting node
     start.g = priority
+    nodes_expaned = 0
+
+    # Start the timer
+    start_time = timer()
 
     # if there is still nodes to open
     while not frontier.isEmpty():
@@ -102,21 +131,22 @@ def search(map_, start_value, goal, algorithm='BFS'):
         current = map[current_cell.y][current_cell.x]
 
         # check if the goal is reached
-        if current == goal:
+        if current == goal_value:
             break
 
+        nodes_expaned += 1
         # for each neighbour of the current cell
         # Implement get_neighbors function (return nodes to expand next)
         # (make sure you avoid repetitions!)
-        for next in get_neighbors(map, current_cell, goal):
+        for next in get_neighbors(map, current_cell, goal_value):
 
             # compute cost to reach next cell
             # Implement cost function
-            cost = cost_function(algorithm, current_cell, next)
+            cost = cost_function(algorithm, current_cell, next, start, goal)
             next.g = cost
 
             # update the cell value in the map
-            if map[next.y][next.x] != goal:
+            if map[next.y][next.x] != goal_value:
                 map[next.y][next.x] = cost
 
             # add next cell to open list
@@ -126,10 +156,10 @@ def search(map_, start_value, goal, algorithm='BFS'):
             came_from[next.x, next.y] = [current_cell.x, current_cell.y]
 
     # Figure out the path
-    coord = np.where(map == goal)
-    goal = cell(coord[1][0], coord[0][0])    # start cell
+    coord = np.where(map == goal_value)
+    goal_value = cell(coord[1][0], coord[0][0])    # start cell
     path = []
-    current = [goal.x, goal.y]
+    current = [goal_value.x, goal_value.y]
     while current != [start.x, start.y]:
         path.append(current)
         current = came_from[current[0], current[1]]
@@ -146,4 +176,4 @@ def search(map_, start_value, goal, algorithm='BFS'):
 
     cost = path.shape[0]
 
-    return path, cost, map
+    return path, cost, map, nodes_expaned, (timer() - start_time)*1000
