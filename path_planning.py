@@ -104,7 +104,7 @@ def generateMap2d_obstacle(size_):
 
 
 # helper function for plotting the result
-def plotMap(map2d_, path_, title_=''):
+def plotMap(map2d_, path_, title_='', save_path=None):
     '''Plots a map (image) of a 2d matrix with a path from start point to the goal point.
         cells with a value of 0: Free cell;
                              -1: Obstacle;
@@ -169,6 +169,8 @@ def plotMap(map2d_, path_, title_=''):
     plt.colorbar()
     plt.plot(path[:][0], path[:][1], color='magenta', linewidth=2.5)
     plt.tight_layout()
+    if save_path is not None:
+        plt.savefig(save_path)
     plt.show()
 
 
@@ -178,14 +180,15 @@ def plotMap(map2d_, path_, title_=''):
 # -2 - Start point
 # -3 - Goal point
 _map_ = generateMap2d([60, 60])
+#_map_, info = generateMap2d_obstacle([60, 60])
 plt.clf()
 plt.imshow(_map_)
 plt.show()
 
 # Find the path from start point to the goal point using different algorithms
-for _algo_ in ['DFS', 'BFS', 'Random', 'Greedy_Manhattan', 'Greedy_Euclidean', 'A*_Manhattan', 'A*_Euclidean']:
+for _algo_ in ['BFS', 'DFS', 'Random', 'Greedy_Manhattan', 'Greedy_Euclidean', 'AStar_Manhattan', 'AStar_Euclidean']:
     path, cost, solved_map, nodes_exp, time = sa.search(_map_, start_value=-2, goal_value=-3, algorithm=_algo_)
-    plotMap(solved_map, path, title_=_algo_ + ' with cost = ' + str(cost) + '\nExpanded nodes = ' + str(nodes_exp) + '\nTime = ' + str(time) + ' ms')
+    plotMap(solved_map, path, title_=_algo_ + ' with cost = ' + str(cost) + '\nExpanded nodes = ' + str(nodes_exp) + '\nTime = ' + str(time) + ' ms', save_path="Figs/" + _algo_ + '.png')
     print('Path found by ' + _algo_ + ' algorithm: with cost = ' + str(cost) + ' and expanded nodes = ' + str(nodes_exp) + ' and time = ' + str(time) + ' ms')
 
 quit()

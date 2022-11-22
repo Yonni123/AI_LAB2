@@ -2,16 +2,25 @@ import numpy as np
 import heapq
 from timeit import default_timer as timer
 
+
 # Priority Queue based on heapq
 class PriorityQueue:
     def __init__(self):
         self.elements = []
+
     def isEmpty(self):
         return len(self.elements) == 0
+
     def add(self, item, priority):
-        heapq.heappush(self.elements,(priority,item))
+        heapq.heappush(self.elements, (priority, item))
+
     def remove(self):
         return heapq.heappop(self.elements)[1]
+
+    def remove_random(self):
+        # remove a random element from the queue
+        element = self.elements.pop(np.random.randint(0, len(self.elements)))
+        return element[1]
 
 
 class cell:
@@ -60,6 +69,7 @@ def get_neighbors(map, current_cell, goal=-3):
 def manhattan_distance(cell1, cell2):
     return abs(cell1.x - cell2.x) + abs(cell1.y - cell2.y)
 
+
 def euclidean_distance(cell1, cell2):
     return np.sqrt((cell1.x - cell2.x) ** 2 + (cell1.y - cell2.y) ** 2)
 
@@ -75,15 +85,17 @@ def cost_function(algorithm, current_cell, next, start, goal):
         return manhattan_distance(next, goal)
     elif algorithm == "Greedy_Euclidean":
         return euclidean_distance(next, goal)
-    elif algorithm == "A*_Manhattan":
-        return manhattan_distance(start, next) + manhattan_distance(next, goal)
-    elif algorithm == "A*_Euclidean":
-        return euclidean_distance(start, next) + euclidean_distance(next, goal)
+    elif algorithm == "AStar_Manhattan":
+        g = (current_cell.g - manhattan_distance(current_cell, goal))  # g(n) = g(n-1) - h(n-1)
+        return g + 1 + manhattan_distance(next, goal)
+    elif algorithm == "AStar_Euclidean":
+        g = (current_cell.g - euclidean_distance(current_cell, goal))  # g(n) = g(n-1) - h(n-1)
+        return g + 1 + euclidean_distance(next, goal)
 
     return current_cell.g + 1
 
 
-def start_cost(algorithm):
+def start_cost(algorithm, start, goal):
     if algorithm == "BFS":
         return 0
     elif algorithm == "DFS":
@@ -94,11 +106,15 @@ def start_cost(algorithm):
         return 0
     elif algorithm == "Greedy_Euclidean":
         return 0
-    elif algorithm == "A*_Manhattan":
-        return 0
-    elif algorithm == "A*_Euclidean":
-        return 0
+    elif algorithm == "AStar_Manhattan":
+        return manhattan_distance(start, goal)
+    elif algorithm == "AStar_Euclidean":
+        return euclidean_distance(start, goal)
     pass
+
+
+def map_value(map, cell, algorithm):
+    return map[cell.y][cell.x]
 
 
 def search(map_, start_value, goal_value, algorithm='BFS'):
@@ -106,13 +122,13 @@ def search(map_, start_value, goal_value, algorithm='BFS'):
     map = np.copy(map_)
 
     coord = np.where(map == start_value)
-    start = cell(coord[1][0], coord[0][0])    # start cell
+    start = cell(coord[1][0], coord[0][0])  # start cell
     coord = np.where(map == goal_value)
-    goal = cell(coord[1][0], coord[0][0])    # goal cell
+    goal = cell(coord[1][0], coord[0][0])  # goal cell
 
     # New priority queue
     frontier = PriorityQueue()
-    priority = start_cost(algorithm)
+    priority = start_cost(algorithm, start, goal)
     frontier.add(start, priority)  # add the start cell to the frontier
 
     # path taken
@@ -127,7 +143,11 @@ def search(map_, start_value, goal_value, algorithm='BFS'):
 
     # if there is still nodes to open
     while not frontier.isEmpty():
-        current_cell = frontier.remove()
+        if algorithm != "Random":
+            current_cell = frontier.remove()
+        else:
+            current_cell = frontier.remove_random()
+
         current = map[current_cell.y][current_cell.x]
 
         # check if the goal is reached
@@ -147,17 +167,27 @@ def search(map_, start_value, goal_value, algorithm='BFS'):
 
             # update the cell value in the map
             if map[next.y][next.x] != goal_value:
-                map[next.y][next.x] = cost
+                if algorithm == "AStar_Manhattan":
+                    g = (current_cell.g - manhattan_distance(current_cell, goal))  # g(n) = g(n-1) - h(n-1)
+                    map[next.y][next.x] = g + 1
+                elif algorithm == "AStar_Euclidean":
+                    g = (current_cell.g - euclidean_distance(current_cell, goal))  # g(n) = g(n-1) - h(n-1)
+                    map[next.y][next.x] = g + 1
+                else:
+                    map[next.y][next.x] = cost
 
             # add next cell to open list
             frontier.add(next, cost)
-            
+
             # add to path
             came_from[next.x, next.y] = [current_cell.x, current_cell.y]
 
+    # Stop the timer
+    end_time = timer()
+
     # Figure out the path
     coord = np.where(map == goal_value)
-    goal_value = cell(coord[1][0], coord[0][0])    # start cell
+    goal_value = cell(coord[1][0], coord[0][0])  # start cell
     path = []
     current = [goal_value.x, goal_value.y]
     while current != [start.x, start.y]:
@@ -176,4 +206,4 @@ def search(map_, start_value, goal_value, algorithm='BFS'):
 
     cost = path.shape[0]
 
-    return path, cost, map, nodes_expaned, (timer() - start_time)*1000
+    return path, cost, map, nodes_expaned, (end_time - start_time) * 1000
