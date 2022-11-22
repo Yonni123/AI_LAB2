@@ -80,7 +80,7 @@ def cost_function(algorithm, current_cell, next, start, goal):
     elif algorithm == "DFS":
         return current_cell.g - 1
     elif algorithm == "Random":
-        return np.random.randint(1, 100)
+        return current_cell.g + 1
     elif algorithm == "Greedy_Manhattan":
         return manhattan_distance(next, goal)
     elif algorithm == "Greedy_Euclidean":
@@ -101,7 +101,7 @@ def start_cost(algorithm, start, goal):
     elif algorithm == "DFS":
         return np.iinfo(np.int32).max
     elif algorithm == "Random":
-        return np.random.randint(100)
+        return 0
     elif algorithm == "Greedy_Manhattan":
         return 0
     elif algorithm == "Greedy_Euclidean":
@@ -113,8 +113,15 @@ def start_cost(algorithm, start, goal):
     pass
 
 
-def map_value(map, cell, algorithm):
-    return map[cell.y][cell.x]
+def update_map_value(map, current_cell, next, goal, cost, algorithm):
+    if algorithm == "AStar_Manhattan":
+        g = (current_cell.g - manhattan_distance(current_cell, goal))  # g(n) = g(n-1) - h(n-1)
+        map[next.y][next.x] = g + 1
+    elif algorithm == "AStar_Euclidean":
+        g = (current_cell.g - euclidean_distance(current_cell, goal))  # g(n) = g(n-1) - h(n-1)
+        map[next.y][next.x] = g + 1
+    else:
+        map[next.y][next.x] = cost
 
 
 def search(map_, start_value, goal_value, algorithm='BFS'):
@@ -165,16 +172,9 @@ def search(map_, start_value, goal_value, algorithm='BFS'):
             cost = cost_function(algorithm, current_cell, next, start, goal)
             next.g = cost
 
-            # update the cell value in the map
+            # update the cell value in the map (for visualization purposes)
             if map[next.y][next.x] != goal_value:
-                if algorithm == "AStar_Manhattan":
-                    g = (current_cell.g - manhattan_distance(current_cell, goal))  # g(n) = g(n-1) - h(n-1)
-                    map[next.y][next.x] = g + 1
-                elif algorithm == "AStar_Euclidean":
-                    g = (current_cell.g - euclidean_distance(current_cell, goal))  # g(n) = g(n-1) - h(n-1)
-                    map[next.y][next.x] = g + 1
-                else:
-                    map[next.y][next.x] = cost
+                update_map_value(map, current_cell, next, goal, cost, algorithm)
 
             # add next cell to open list
             frontier.add(next, cost)
@@ -199,9 +199,11 @@ def search(map_, start_value, goal_value, algorithm='BFS'):
     path = np.array(path)
 
     # Fix the map values, so they range from 1 to max
-    if algorithm == "DFS" or algorithm == "Random":
+    if algorithm == "DFS":
         # find min value that's above 0
         min_val = np.min(map[map > 0])
+
+        # subtract min value from all values
         map[map > 0] -= min_val - 1
 
     cost = path.shape[0]

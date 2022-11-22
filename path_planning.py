@@ -3,6 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import search_algorithm as sa
+import pandas as pd
 
 percentOfObstacle = 0.9  # 30% - 60%, random
 
@@ -180,17 +181,26 @@ def plotMap(map2d_, path_, title_='', save_path=None):
 # -2 - Start point
 # -3 - Goal point
 _map_ = generateMap2d([60, 60])
-#_map_, info = generateMap2d_obstacle([60, 60])
+# _map_, info = generateMap2d_obstacle([60, 60])
 plt.clf()
 plt.imshow(_map_)
 plt.show()
 
+algorithms = ['BFS', 'DFS', 'Random', 'Greedy_Manhattan', 'Greedy_Euclidean', 'AStar_Manhattan', 'AStar_Euclidean']
+costs = [] * len(algorithms)
+expanded_nodes = [] * len(algorithms)
+times = [] * len(algorithms)
 # Find the path from start point to the goal point using different algorithms
-for _algo_ in ['BFS', 'DFS', 'Random', 'Greedy_Manhattan', 'Greedy_Euclidean', 'AStar_Manhattan', 'AStar_Euclidean']:
+for _algo_ in algorithms:
     path, cost, solved_map, nodes_exp, time = sa.search(_map_, start_value=-2, goal_value=-3, algorithm=_algo_)
-    plotMap(solved_map, path, title_=_algo_ + ' with cost = ' + str(cost) + '\nExpanded nodes = ' + str(nodes_exp) + '\nTime = ' + str(time) + ' ms', save_path="Figs/" + _algo_ + '.png')
-    print('Path found by ' + _algo_ + ' algorithm: with cost = ' + str(cost) + ' and expanded nodes = ' + str(nodes_exp) + ' and time = ' + str(time) + ' ms')
+    plotMap(map2d_=solved_map, path_=path, title_=_algo_ + ' with cost = ' + str(cost) + '\nExpanded nodes = ' + str(nodes_exp) + '\nTime = ' + str(time) + ' ms', save_path="Figs/" + _algo_ + '.png')
 
+    costs.append(cost)
+    expanded_nodes.append(nodes_exp)
+    times.append(time)
+
+df = pd.DataFrame(data={'Algorithm': algorithms, 'Cost': costs, 'Expanded_nodes': expanded_nodes, 'Time_(ms)': times})
+print(df)
 quit()
 
 # map with rotated-H shape obstacle and obstacles randomly distributed
