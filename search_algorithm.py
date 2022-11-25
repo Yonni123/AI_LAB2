@@ -126,6 +126,9 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
     goal = cell(coord[1][0], coord[0][0])  # goal cell
 
     if algorithm == "AStar_MyHeuristic":  # THIS ONLY RUNS WHEN THE ALGORITHM IS AStar_MyHeuristic
+        goals = [] * 2
+        current_goal = 0
+
         # Calculate the mid-point between the start and goal
         mid_point = (start.y + goal.y) / 2
 

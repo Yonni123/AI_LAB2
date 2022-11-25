@@ -175,6 +175,13 @@ def plotMap(map2d_, path_, title_='', save_path=None):
     plt.show()
 
 
+for i in range(100):
+    _map_, info = generateMap2d_obstacle([60, 60])
+    path, cost, solved_map, nodes_exp, time = sa.search(_map_, start_value=-2, goal_value=-3, algorithm='AStar_MyHeuristic',
+                                                        info=info)
+    plotMap(solved_map, path, title_='AStar_MyHeuristic')
+
+
 _map_, info = generateMap2d_obstacle([60, 60])
 plt.clf()
 plt.imshow(_map_)
