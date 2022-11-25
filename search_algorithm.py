@@ -80,33 +80,22 @@ def get_priority(algorithm, current_cell, next, goal):
     elif algorithm == "DFS":
         return -current_cell.g - 1
     elif algorithm == "Random":
-        return current_cell.g + 1
+        return 0    # This value doesn't matter for random
     elif algorithm == "Greedy_Manhattan":
         return manhattan_distance(next, goal)
     elif algorithm == "Greedy_Euclidean":
         return euclidean_distance(next, goal)
     elif algorithm == "AStar_Manhattan":
-        g = (current_cell.g - manhattan_distance(current_cell, goal))  # g(n) = g(n-1) - h(n-1)
-        return g + 1 + manhattan_distance(next, goal)
+        return current_cell.g + manhattan_distance(next, goal)
     elif algorithm == "AStar_Euclidean":
-        g = (current_cell.g - euclidean_distance(current_cell, goal))  # g(n) = g(n-1) - h(n-1)
-        return g + 1 + euclidean_distance(next, goal)
+        return current_cell.g + euclidean_distance(next, goal)
 
-    return current_cell.g + 1
-
-
-def update_map_value(map, current_cell, next, goal, cost, algorithm):
-    if algorithm == "AStar_Manhattan":
-        g = (current_cell.g - manhattan_distance(current_cell, goal))  # g(n) = g(n-1) - h(n-1)
-        map[next.y][next.x] = g + 1
-    elif algorithm == "AStar_Euclidean":
-        g = (current_cell.g - euclidean_distance(current_cell, goal))  # g(n) = g(n-1) - h(n-1)
-        map[next.y][next.x] = g + 1
     else:
-        map[next.y][next.x] = cost
+        print("Invalid algorithm")
+        return -1
 
 
-def search(map_, start_value, goal_value, algorithm='BFS'):
+def search(map_, start_value, goal_value, algorithm='BFS', info=None):
     # Make a copy of the map
     map = np.copy(map_)
 
@@ -136,20 +125,16 @@ def search(map_, start_value, goal_value, algorithm='BFS'):
         else:
             current_cell = frontier.remove_random()
 
-        current = map[current_cell.y][current_cell.x]
-
         # check if the goal is reached
-        if current == goal_value:
+        if current_cell.x == goal.x and current_cell.y == goal.y:
             break
 
         nodes_expaned += 1
         # for each neighbour of the current cell
         for next in get_neighbors(map, current_cell, goal_value):
-
-            # compute cost to reach next cell
-            # Implement cost function
+            # compute priority for next cell
             priority = get_priority(algorithm, current_cell, next, goal)
-            next.g = current_cell.g + 1
+            next.g = current_cell.g + 1 # This is the cost
 
             # update the cell value in the map (for visualization purposes)
             if map[next.y][next.x] != goal_value:
