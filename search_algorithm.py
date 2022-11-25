@@ -41,28 +41,24 @@ class cell:
 
 
 # An example of search algorithm, feel free to modify and implement the missing part
-def get_neighbors(map, current_cell, goal=-3):
+def get_neighbors(map, current_cell):
     neighbors = []
 
     # get the cell above the current cell (if it exists and is not an obstacle or already visited)
     if current_cell.y - 1 >= 0:
-        if map[current_cell.y - 1][current_cell.x] == 0 or map[current_cell.y - 1][current_cell.x] == goal:
-            neighbors.append(cell(current_cell.x, current_cell.y - 1))
+        neighbors.append(cell(current_cell.x, current_cell.y - 1))
 
     # get the cell below the current cell (if it exists and is not an obstacle or already visited)
     if current_cell.y + 1 < map.shape[0]:
-        if map[current_cell.y + 1][current_cell.x] == 0 or map[current_cell.y + 1][current_cell.x] == goal:
-            neighbors.append(cell(current_cell.x, current_cell.y + 1))
+        neighbors.append(cell(current_cell.x, current_cell.y + 1))
 
     # get the cell to the left of the current cell (if it exists and is not an obstacle or already visited)
     if current_cell.x - 1 >= 0:
-        if map[current_cell.y][current_cell.x - 1] == 0 or map[current_cell.y][current_cell.x - 1] == goal:
-            neighbors.append(cell(current_cell.x - 1, current_cell.y))
+        neighbors.append(cell(current_cell.x - 1, current_cell.y))
 
     # get the cell to the right of the current cell (if it exists and is not an obstacle or already visited)
     if current_cell.x + 1 < map.shape[1]:
-        if map[current_cell.y][current_cell.x + 1] == 0 or map[current_cell.y][current_cell.x + 1] == goal:
-            neighbors.append(cell(current_cell.x + 1, current_cell.y))
+        neighbors.append(cell(current_cell.x + 1, current_cell.y))
 
     return neighbors
 
@@ -104,6 +100,18 @@ def get_priority(algorithm, current_cell, next, goal):
 
 goals = [] * 2
 current_goal = 0
+
+
+def free_space_around_current(map, current_cell, call_number):
+    map[current_cell.y, current_cell.x] = 0  # free space
+    if call_number == 4:
+        return True
+
+    for neighbour in get_neighbors(map, current_cell):
+        if map[neighbour.y, neighbour.x] < 0:
+            continue
+        else:
+            free_space_around_current(map, neighbour, call_number + 1)
 
 
 def search(map_, start_value, goal_value, algorithm='BFS', info=None):
@@ -167,6 +175,7 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
                         goal = goals[current_goal]
                         frontier = PriorityQueue()
                         frontier.add(current_cell, 0)
+                        free_space_around_current(map, current_cell, 0)
                         continue
                 elif current_goal == 1:
                     current_goal += 1
@@ -179,7 +188,10 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
 
         nodes_expaned += 1
         # for each neighbour of the current cell
-        for next in get_neighbors(map, current_cell, goal_value):
+        for next in get_neighbors(map, current_cell):
+            if map[next.y][next.x] != 0 and map[next.y][next.x] != goal_value:
+                continue
+
             # compute priority for next cell
             priority = get_priority(algorithm, current_cell, next, goal)
             next.g = current_cell.g + 1  # This is the cost
