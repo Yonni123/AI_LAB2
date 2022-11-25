@@ -131,12 +131,12 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
 
         if mid_point <= map_.shape[0] / 2:  # go typ-left first
             x, y = info[2], info[1]
-            while map[y][x] != 0:
+            while map[y][x] != 0 and x > 0:
                 x -= 1
             goals.append(cell(x, y))
         else:
             x, y = info[2], info[0]
-            while map[y][x] != 0:  # go bottom-left first
+            while map[y][x] != 0 and x > 0:  # go bottom-left first
                 x -= 1
             goals.append(cell(x, y))
 
