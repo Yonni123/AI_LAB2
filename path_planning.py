@@ -79,7 +79,7 @@ def generateMap2d_obstacle(size_):
             np.random.randint(7 * size_x // 10 + 3, size_x - 5)]
     ytop = np.random.randint(7 * size_y // 10 + 3, size_y - 5)
     xbot = np.random.randint(3, 3 * size_x // 10 - 5), np.random.randint(7 * size_x // 10 + 3,
-                                                                                         size_x - 5)
+                                                                         size_x - 5)
     ybot = np.random.randint(5, size_y // 5 - 3)
 
     map2d[ybot, xbot[0]:xbot[1] + 1] = -1
@@ -175,20 +175,23 @@ def plotMap(map2d_, path_, title_='', save_path=None):
     plt.show()
 
 
-
 _map_, info = generateMap2d_obstacle([60, 60])
 plt.clf()
 plt.imshow(_map_)
 plt.show()
 
-algorithms = ['BFS', 'DFS', 'Random', 'Greedy_Manhattan', 'Greedy_Euclidean', 'AStar_Manhattan', 'AStar_Euclidean', 'AStar_MyHeuristic']
+algorithms = ['BFS', 'DFS', 'Random', 'Greedy_Manhattan', 'Greedy_Euclidean', 'AStar_Manhattan', 'AStar_Euclidean',
+              'AStar_MyHeuristic']
 costs = [] * len(algorithms)
 expanded_nodes = [] * len(algorithms)
 times = [] * len(algorithms)
 # Find the path from start point to the goal point using different algorithms
 for _algo_ in algorithms:
-    path, cost, solved_map, nodes_exp, time = sa.search(_map_, start_value=-2, goal_value=-3, algorithm=_algo_, info=info)
-    plotMap(map2d_=solved_map, path_=path, title_=_algo_ + ' with cost = ' + str(cost) + '\nExpanded nodes = ' + str(nodes_exp) + '\nTime = ' + str(time) + ' ms', save_path="Figs/" + _algo_ + '.png')
+    path, cost, solved_map, nodes_exp, time = sa.search(_map_, start_value=-2, goal_value=-3, algorithm=_algo_,
+                                                        info=info)
+    plotMap(map2d_=solved_map, path_=path,
+            title_=_algo_ + ' with cost = ' + str(cost) + '\nExpanded nodes = ' + str(nodes_exp) + '\nTime = ' + str(
+                time) + ' ms', save_path=None)
 
     costs.append(cost)
     expanded_nodes.append(nodes_exp)
