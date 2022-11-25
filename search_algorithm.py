@@ -115,19 +115,20 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
     coord = np.where(map == goal_value)
     goal = cell(coord[1][0], coord[0][0])  # goal cell
 
-    if algorithm == "AStar_MyHeuristic":
-        a = map[info[1], info[2]]
-        b = map[info[0], info[2]]
-        if goal.y <= map_.shape[0] / 2:
-            x, y = 5, info[1]
+    if algorithm == "AStar_MyHeuristic":    # THIS ONLY RUNS WHEN THE ALGORITHM IS AStar_MyHeuristic
+        # Calculate the mid-point between the start and goal
+        mid_point = (start.y + goal.y) / 2
+
+        if mid_point <= map_.shape[0] / 2: # go up first
+            x, y = info[2], info[1]
             while(map[y][x] != 0):
-                y -= 1
-            goals.append(cell(x, y))  # go up
+                x -= 1
+            goals.append(cell(x, y))
         else:
-            x, y = 5, info[0]
-            while (map[y][x] != 0):
-                y += 1
-            goals.append(cell(x, y))  # go down
+            x, y = info[2], info[0]
+            while (map[y][x] != 0): # go down first
+                x -= 1
+            goals.append(cell(x, y))
         goals.append(goal)
         goal = goals[current_goal]
 
