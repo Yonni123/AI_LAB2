@@ -116,7 +116,9 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
     goal = cell(coord[1][0], coord[0][0])  # goal cell
 
     if algorithm == "AStar_MyHeuristic":
-        if start.y <= map_.shape[0] / 2:
+        a = map[info[1], info[2]]
+        b = map[info[0], info[2]]
+        if goal.y <= map_.shape[0] / 2:
             x, y = 5, info[1]
             while(map[y][x] != 0):
                 y -= 1
