@@ -85,7 +85,7 @@ def get_priority(algorithm, current_cell, next, goal):
     elif algorithm == "DFS":
         return -current_cell.g - 1
     elif algorithm == "Random":
-        return 0    # This value doesn't matter for random
+        return 0  # This value doesn't matter for random
     elif algorithm == "Greedy_Manhattan":
         return manhattan_distance(next, goal)
     elif algorithm == "Greedy_Euclidean":
@@ -102,8 +102,10 @@ def get_priority(algorithm, current_cell, next, goal):
         return -1
 
 
-goals = []*2
+goals = [] * 2
 current_goal = 0
+
+
 def search(map_, start_value, goal_value, algorithm='BFS', info=None):
     global goals, current_goal
 
@@ -115,20 +117,26 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
     coord = np.where(map == goal_value)
     goal = cell(coord[1][0], coord[0][0])  # goal cell
 
-    if algorithm == "AStar_MyHeuristic":    # THIS ONLY RUNS WHEN THE ALGORITHM IS AStar_MyHeuristic
+    if algorithm == "AStar_MyHeuristic":  # THIS ONLY RUNS WHEN THE ALGORITHM IS AStar_MyHeuristic
         # Calculate the mid-point between the start and goal
         mid_point = (start.y + goal.y) / 2
 
-        if mid_point <= map_.shape[0] / 2: # go up first
+        if mid_point <= map_.shape[0] / 2:  # go typ-left first
             x, y = info[2], info[1]
-            while(map[y][x] != 0):
+            while map[y][x] != 0:
                 x -= 1
             goals.append(cell(x, y))
         else:
             x, y = info[2], info[0]
-            while (map[y][x] != 0): # go down first
+            while map[y][x] != 0:  # go bottom-left first
                 x -= 1
             goals.append(cell(x, y))
+
+        x = info[2]
+        while map[y][x] != 0:  # after reaching top or bottom, go right
+            x += 1
+        goals.append(cell(x, y))
+
         goals.append(goal)
         goal = goals[current_goal]
 
@@ -151,22 +159,30 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
             current_cell = frontier.remove_random()
 
         # check if the goal is reached
-        if current_cell.x == goal.x and current_cell.y == goal.y:
+        if current_cell.x == goal.x:
             if algorithm == "AStar_MyHeuristic":
                 if current_goal == 0:
-                    current_goal = 1
+                    if current_cell.y == goal.y:
+                        current_goal += 1
+                        goal = goals[current_goal]
+                        frontier = PriorityQueue()
+                        frontier.add(current_cell, 0)
+                        continue
+                elif current_goal == 1:
+                    current_goal += 1
                     goal = goals[current_goal]
                     frontier = PriorityQueue()
                     frontier.add(current_cell, 0)
                     continue
-            break
+            if current_cell.y == goal.y:
+                break
 
         nodes_expaned += 1
         # for each neighbour of the current cell
         for next in get_neighbors(map, current_cell, goal_value):
             # compute priority for next cell
             priority = get_priority(algorithm, current_cell, next, goal)
-            next.g = current_cell.g + 1 # This is the cost
+            next.g = current_cell.g + 1  # This is the cost
 
             # update the cell value in the map (for visualization purposes)
             if map[next.y][next.x] != goal_value:
