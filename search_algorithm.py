@@ -71,10 +71,6 @@ def euclidean_distance(cell1, cell2):
     return np.sqrt((cell1.x - cell2.x) ** 2 + (cell1.y - cell2.y) ** 2)
 
 
-def my_heuristic(next, goal):
-    pass
-
-
 def get_priority(algorithm, current_cell, next, goal):
     if algorithm == "BFS":
         return current_cell.g + 1
@@ -124,6 +120,7 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
     start = cell(coord[1][0], coord[0][0])  # start cell
     coord = np.where(map == goal_value)
     goal = cell(coord[1][0], coord[0][0])  # goal cell
+    goal_copy = cell(coord[1][0], coord[0][0])  # goal cell
 
     if algorithm == "AStar_MyHeuristic":  # THIS ONLY RUNS WHEN THE ALGORITHM IS AStar_MyHeuristic
         goals = [] * 2
@@ -161,9 +158,14 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
 
     # Start the timer
     start_time = timer()
+    current_cell = start
 
     # if there is still nodes to open
-    while not frontier.isEmpty():
+    while not frontier.isEmpty() or goal_copy != current_cell:
+        if frontier.isEmpty():
+            free_space_around_current(map, current_cell, 0)
+            frontier.add(current_cell, 0)
+
         if algorithm != "Random":
             current_cell = frontier.remove()
         else:
@@ -178,7 +180,6 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
                         goal = goals[current_goal]
                         frontier = PriorityQueue()
                         frontier.add(current_cell, 0)
-                        free_space_around_current(map, current_cell, 0)
                         continue
                 elif current_goal == 1:
                     current_goal += 1
