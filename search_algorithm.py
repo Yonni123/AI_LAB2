@@ -74,11 +74,11 @@ def euclidean_distance(cell1, cell2):
     return np.sqrt((cell1.x - cell2.x) ** 2 + (cell1.y - cell2.y) ** 2)
 
 
-def cost_function(algorithm, current_cell, next, start, goal):
+def get_priority(algorithm, current_cell, next, goal):
     if algorithm == "BFS":
         return current_cell.g + 1
     elif algorithm == "DFS":
-        return current_cell.g - 1
+        return -current_cell.g - 1
     elif algorithm == "Random":
         return current_cell.g + 1
     elif algorithm == "Greedy_Manhattan":
@@ -93,24 +93,6 @@ def cost_function(algorithm, current_cell, next, start, goal):
         return g + 1 + euclidean_distance(next, goal)
 
     return current_cell.g + 1
-
-
-def start_cost(algorithm, start, goal):
-    if algorithm == "BFS":
-        return 0
-    elif algorithm == "DFS":
-        return np.iinfo(np.int32).max-1
-    elif algorithm == "Random":
-        return 0
-    elif algorithm == "Greedy_Manhattan":
-        return 0
-    elif algorithm == "Greedy_Euclidean":
-        return 0
-    elif algorithm == "AStar_Manhattan":
-        return manhattan_distance(start, goal)
-    elif algorithm == "AStar_Euclidean":
-        return euclidean_distance(start, goal)
-    pass
 
 
 def update_map_value(map, current_cell, next, goal, cost, algorithm):
@@ -135,14 +117,13 @@ def search(map_, start_value, goal_value, algorithm='BFS'):
 
     # New priority queue
     frontier = PriorityQueue()
-    priority = start_cost(algorithm, start, goal)
-    frontier.add(start, priority)  # add the start cell to the frontier
+    frontier.add(start, 0)  # add the start cell to the frontier
 
     # path taken
     came_from = {}
 
     # init. starting node
-    start.g = priority
+    start.g = 0
     nodes_expaned = 0
 
     # Start the timer
@@ -163,21 +144,19 @@ def search(map_, start_value, goal_value, algorithm='BFS'):
 
         nodes_expaned += 1
         # for each neighbour of the current cell
-        # Implement get_neighbors function (return nodes to expand next)
-        # (make sure you avoid repetitions!)
         for next in get_neighbors(map, current_cell, goal_value):
 
             # compute cost to reach next cell
             # Implement cost function
-            cost = cost_function(algorithm, current_cell, next, start, goal)
-            next.g = cost
+            priority = get_priority(algorithm, current_cell, next, goal)
+            next.g = current_cell.g + 1
 
             # update the cell value in the map (for visualization purposes)
             if map[next.y][next.x] != goal_value:
-                update_map_value(map, current_cell, next, goal, cost, algorithm)
+                map[next.y][next.x] = next.g
 
             # add next cell to open list
-            frontier.add(next, cost)
+            frontier.add(next, priority)
 
             # add to path
             came_from[next.x, next.y] = [current_cell.x, current_cell.y]
@@ -186,10 +165,8 @@ def search(map_, start_value, goal_value, algorithm='BFS'):
     end_time = timer()
 
     # Figure out the path (backtracking)
-    coord = np.where(map == goal_value)
-    goal_value = cell(coord[1][0], coord[0][0])  # start cell
     path = []
-    current = [goal_value.x, goal_value.y]
+    current = [goal.x, goal.y]  # start from the goal
     while current != [start.x, start.y]:
         path.append(current)
         current = came_from[current[0], current[1]]
@@ -197,21 +174,6 @@ def search(map_, start_value, goal_value, algorithm='BFS'):
 
     # Convert path to numpy array
     path = np.array(path)
-
-    # Fix the map values, so they range from 1 to max (for visualization purposes)
-    if algorithm == "DFS":
-        # find min value that's above 0
-        min_val = np.min(map[map > 0])
-        map[map > 0] *= -1
-        map[map > 0] -= min_val - 1
-        map[map < -3] += np.iinfo(np.int32).max
-    elif algorithm == "Greedy_Manhattan" or algorithm == "Greedy_Euclidean":
-        max_val = np.max(map)
-        map[map > 0] += 3
-        map[map > 0] *= -1
-        map[map < -3] += max_val + 4
-
-
     cost = path.shape[0]
 
     return path, cost, map, nodes_expaned, (end_time - start_time) * 1000

@@ -180,7 +180,7 @@ def plotMap(map2d_, path_, title_='', save_path=None):
 # -1 - Obstacle
 # -2 - Start point
 # -3 - Goal point
-_map_ = generateMap2d([60, 60])
+_map_ = generateMap2d([20, 20])
 _map_, info = generateMap2d_obstacle([60, 60])
 plt.clf()
 plt.imshow(_map_)
