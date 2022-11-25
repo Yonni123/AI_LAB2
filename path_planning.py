@@ -175,24 +175,19 @@ def plotMap(map2d_, path_, title_='', save_path=None):
     plt.show()
 
 
-# create a map with obstacles randomly distributed
-#  0 - Free cell
-# -1 - Obstacle
-# -2 - Start point
-# -3 - Goal point
-_map_ = generateMap2d([20, 20])
+
 _map_, info = generateMap2d_obstacle([60, 60])
 plt.clf()
 plt.imshow(_map_)
 plt.show()
 
-algorithms = ['BFS', 'DFS', 'Random', 'Greedy_Manhattan', 'Greedy_Euclidean', 'AStar_Manhattan', 'AStar_Euclidean']
+algorithms = ['BFS', 'DFS', 'Random', 'Greedy_Manhattan', 'Greedy_Euclidean', 'AStar_Manhattan', 'AStar_Euclidean', 'AStar_MyHeuristic']
 costs = [] * len(algorithms)
 expanded_nodes = [] * len(algorithms)
 times = [] * len(algorithms)
 # Find the path from start point to the goal point using different algorithms
 for _algo_ in algorithms:
-    path, cost, solved_map, nodes_exp, time = sa.search(_map_, start_value=-2, goal_value=-3, algorithm=_algo_)
+    path, cost, solved_map, nodes_exp, time = sa.search(_map_, start_value=-2, goal_value=-3, algorithm=_algo_, info=info)
     plotMap(map2d_=solved_map, path_=path, title_=_algo_ + ' with cost = ' + str(cost) + '\nExpanded nodes = ' + str(nodes_exp) + '\nTime = ' + str(time) + ' ms', save_path="Figs/" + _algo_ + '.png')
 
     costs.append(cost)
@@ -201,33 +196,3 @@ for _algo_ in algorithms:
 
 df = pd.DataFrame(data={'Algorithm': algorithms, 'Cost': costs, 'Expanded_nodes': expanded_nodes, 'Time_(ms)': times})
 print(df)
-quit()
-
-# map with rotated-H shape obstacle and obstacles randomly distributed
-map_h_object, info = generateMap2d_obstacle([60, 60])
-
-# environment information
-print("map info: ")
-print("y top: ", info[0])
-print("t bot: ", info[1])
-print("x wall: ", info[2])
-
-plt.clf()
-plt.imshow(map_h_object)
-plt.show()
-
-# example for a solved_map
-#  0 - unexpanded cell
-# -1 - obstacle
-# -2 - start point
-# -3 - goal point
-# positive_numbers - one type of the values described in lab2 description (heuristic cost, travel cost, cell total cost,...)
-
-example_solved_map = map_h_object
-example_solved_path = np.array([[xx, xx * 2] if xx % 2 == 0 else [xx, xx + 1] for xx in range(20)])
-
-print("path", example_solved_path)
-
-plotMap(example_solved_map, example_solved_path)
-
-# example_solved_path = np.array([[xx, xx] for xx in range(10)])

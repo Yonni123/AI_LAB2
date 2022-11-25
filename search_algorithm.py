@@ -28,6 +28,7 @@ class cell:
         self.x = x
         self.y = y
         self.g = 0
+        self.parent = None
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
@@ -74,6 +75,10 @@ def euclidean_distance(cell1, cell2):
     return np.sqrt((cell1.x - cell2.x) ** 2 + (cell1.y - cell2.y) ** 2)
 
 
+def my_heuristic(next, goal):
+    pass
+
+
 def get_priority(algorithm, current_cell, next, goal):
     if algorithm == "BFS":
         return current_cell.g + 1
@@ -89,13 +94,19 @@ def get_priority(algorithm, current_cell, next, goal):
         return current_cell.g + manhattan_distance(next, goal)
     elif algorithm == "AStar_Euclidean":
         return current_cell.g + euclidean_distance(next, goal)
+    elif algorithm == "AStar_MyHeuristic":
+        return current_cell.g + euclidean_distance(next, goal)
 
     else:
         print("Invalid algorithm")
         return -1
 
 
+goals = []*2
+current_goal = 0
 def search(map_, start_value, goal_value, algorithm='BFS', info=None):
+    global goals, current_goal
+
     # Make a copy of the map
     map = np.copy(map_)
 
@@ -104,12 +115,23 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
     coord = np.where(map == goal_value)
     goal = cell(coord[1][0], coord[0][0])  # goal cell
 
+    if algorithm == "AStar_MyHeuristic":
+        if start.y <= map_.shape[0] / 2:
+            x, y = 5, info[1]
+            while(map[y][x] != 0):
+                y -= 1
+            goals.append(cell(x, y))  # go up
+        else:
+            x, y = 5, info[0]
+            while (map[y][x] != 0):
+                y += 1
+            goals.append(cell(x, y))  # go down
+        goals.append(goal)
+        goal = goals[current_goal]
+
     # New priority queue
     frontier = PriorityQueue()
     frontier.add(start, 0)  # add the start cell to the frontier
-
-    # path taken
-    came_from = {}
 
     # init. starting node
     start.g = 0
@@ -127,6 +149,13 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
 
         # check if the goal is reached
         if current_cell.x == goal.x and current_cell.y == goal.y:
+            if algorithm == "AStar_MyHeuristic":
+                if current_goal == 0:
+                    current_goal = 1
+                    goal = goals[current_goal]
+                    frontier = PriorityQueue()
+                    frontier.add(current_cell, 0)
+                    continue
             break
 
         nodes_expaned += 1
@@ -144,17 +173,16 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
             frontier.add(next, priority)
 
             # add to path
-            came_from[next.x, next.y] = [current_cell.x, current_cell.y]
+            next.parent = current_cell
 
     # Stop the timer
     end_time = timer()
 
     # Figure out the path (backtracking)
     path = []
-    current = [goal.x, goal.y]  # start from the goal
-    while current != [start.x, start.y]:
-        path.append(current)
-        current = came_from[current[0], current[1]]
+    while current_cell.parent is not None:
+        path.append([current_cell.x, current_cell.y])
+        current_cell = current_cell.parent
     path.append([start.x, start.y])
 
     # Convert path to numpy array
