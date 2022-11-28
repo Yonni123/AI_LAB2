@@ -41,24 +41,28 @@ class cell:
 
 
 # An example of search algorithm, feel free to modify and implement the missing part
-def get_neighbors(map, current_cell):
+def get_neighbors(map, current_cell, goal=-3):
     neighbors = []
 
     # get the cell above the current cell (if it exists and is not an obstacle or already visited)
     if current_cell.y - 1 >= 0:
-        neighbors.append(cell(current_cell.x, current_cell.y - 1))
+        if map[current_cell.y - 1][current_cell.x] == 0 or map[current_cell.y - 1][current_cell.x] == goal:
+            neighbors.append(cell(current_cell.x, current_cell.y - 1))
 
     # get the cell below the current cell (if it exists and is not an obstacle or already visited)
     if current_cell.y + 1 < map.shape[0]:
-        neighbors.append(cell(current_cell.x, current_cell.y + 1))
+        if map[current_cell.y + 1][current_cell.x] == 0 or map[current_cell.y + 1][current_cell.x] == goal:
+            neighbors.append(cell(current_cell.x, current_cell.y + 1))
 
     # get the cell to the left of the current cell (if it exists and is not an obstacle or already visited)
     if current_cell.x - 1 >= 0:
-        neighbors.append(cell(current_cell.x - 1, current_cell.y))
+        if map[current_cell.y][current_cell.x - 1] == 0 or map[current_cell.y][current_cell.x - 1] == goal:
+            neighbors.append(cell(current_cell.x - 1, current_cell.y))
 
     # get the cell to the right of the current cell (if it exists and is not an obstacle or already visited)
     if current_cell.x + 1 < map.shape[1]:
-        neighbors.append(cell(current_cell.x + 1, current_cell.y))
+        if map[current_cell.y][current_cell.x + 1] == 0 or map[current_cell.y][current_cell.x + 1] == goal:
+            neighbors.append(cell(current_cell.x + 1, current_cell.y))
 
     return neighbors
 
@@ -69,6 +73,10 @@ def manhattan_distance(cell1, cell2):
 
 def euclidean_distance(cell1, cell2):
     return np.sqrt((cell1.x - cell2.x) ** 2 + (cell1.y - cell2.y) ** 2)
+
+
+def my_heuristic(next, goal):
+    pass
 
 
 def get_priority(algorithm, current_cell, next, goal):
@@ -98,18 +106,6 @@ goals = [] * 2
 current_goal = 0
 
 
-def free_space_around_current(map, current_cell, call_number):
-    map[current_cell.y, current_cell.x] = 0  # free space
-    if call_number == 4:
-        return True
-
-    for neighbour in get_neighbors(map, current_cell):
-        if map[neighbour.y, neighbour.x] < 0:
-            continue
-        else:
-            free_space_around_current(map, neighbour, call_number + 1)
-
-
 def search(map_, start_value, goal_value, algorithm='BFS', info=None):
     global goals, current_goal
 
@@ -120,23 +116,19 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
     start = cell(coord[1][0], coord[0][0])  # start cell
     coord = np.where(map == goal_value)
     goal = cell(coord[1][0], coord[0][0])  # goal cell
-    goal_copy = cell(coord[1][0], coord[0][0])  # goal cell
 
     if algorithm == "AStar_MyHeuristic":  # THIS ONLY RUNS WHEN THE ALGORITHM IS AStar_MyHeuristic
-        goals = [] * 2
-        current_goal = 0
-
         # Calculate the mid-point between the start and goal
         mid_point = (start.y + goal.y) / 2
 
         if mid_point <= map_.shape[0] / 2:  # go typ-left first
             x, y = info[2], info[1]
-            while map[y][x] != 0 and x > 0:
+            while map[y][x] != 0:
                 x -= 1
             goals.append(cell(x, y))
         else:
             x, y = info[2], info[0]
-            while map[y][x] != 0 and x > 0:  # go bottom-left first
+            while map[y][x] != 0:  # go bottom-left first
                 x -= 1
             goals.append(cell(x, y))
 
@@ -158,14 +150,9 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
 
     # Start the timer
     start_time = timer()
-    current_cell = start
 
     # if there is still nodes to open
-    while not frontier.isEmpty() or goal_copy != current_cell:
-        if frontier.isEmpty():
-            free_space_around_current(map, current_cell, 0)
-            frontier.add(current_cell, 0)
-
+    while not frontier.isEmpty():
         if algorithm != "Random":
             current_cell = frontier.remove()
         else:
@@ -192,10 +179,7 @@ def search(map_, start_value, goal_value, algorithm='BFS', info=None):
 
         nodes_expaned += 1
         # for each neighbour of the current cell
-        for next in get_neighbors(map, current_cell):
-            if map[next.y][next.x] != 0 and map[next.y][next.x] != goal_value:
-                continue
-
+        for next in get_neighbors(map, current_cell, goal_value):
             # compute priority for next cell
             priority = get_priority(algorithm, current_cell, next, goal)
             next.g = current_cell.g + 1  # This is the cost

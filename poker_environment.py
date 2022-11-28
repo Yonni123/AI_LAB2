@@ -72,7 +72,7 @@ def poker_strategy_example(opponent_hand,
 
     elif opponent_stack >= 25:
 
-        if opponent_hand_strength is 'weak':
+        if opponent_hand_strength == 'weak':
             if bidding_nr < 3:
                 if agent_action_value == 25:
                     opponent_action = 'BET'
@@ -89,7 +89,7 @@ def poker_strategy_example(opponent_hand,
                     opponent_action = 'CALL'
                     opponent_action_value = 25
 
-        elif opponent_hand_strength is 'median':
+        elif opponent_hand_strength == 'median':
             if bidding_nr < 2:
                 if agent_action_value == 25:
                     opponent_action = 'BET'
@@ -106,7 +106,7 @@ def poker_strategy_example(opponent_hand,
                     opponent_action = 'CALL'
                     opponent_action_value = 5
 
-        elif opponent_hand_strength is 'strong':
+        elif opponent_hand_strength == 'strong':
             if bidding_nr < 2:
                 if agent_action_value == 25:
                     opponent_action = 'BET'
